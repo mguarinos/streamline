@@ -1,0 +1,9 @@
+# Copy this file to backend.hcl and fill in your values.
+# backend.hcl is git-ignored — never commit it.
+# Run scripts/bootstrap.sh to generate it automatically.
+
+bucket       = "streamline-tfstate-prod-123456789012"
+key          = "streamline/prod/terraform.tfstate"
+region       = "eu-west-1"
+encrypt      = true
+use_lockfile = true

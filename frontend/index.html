@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streamline</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23e53e3e'/></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.21.0/video-js.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.21.0/video.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="top-bar">
+    <span id="stream-title">Live</span>
+    <span id="status-badge" class="badge badge--connecting">CONNECTING</span>
+  </div>
+
+  <div id="player-container" class="hidden">
+    <video id="player" class="video-js"></video>
+  </div>
+
+  <div id="dvr-hint">← Drag the timeline to rewind up to 4 hours</div>
+
+  <div id="offline-message">
+    <p>Stream is currently offline.</p>
+    <p>Check back soon.</p>
+  </div>
+
+  <script src="player.js" type="module"></script>
+</body>
+</html>
