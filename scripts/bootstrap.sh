@@ -173,6 +173,7 @@ INLINE_POLICY=$(jq -n \
           "lambda:PublishVersion",
           "lambda:UpdateAlias",
           "lambda:GetFunction",
+          "lambda:GetFunctionConfiguration",
           "lambda:ListAliases",
           "lambda:GetFunctionUrlConfig"
         ],
