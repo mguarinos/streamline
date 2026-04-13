@@ -9,7 +9,7 @@ output "ingest_endpoint" {
 }
 
 output "channel_arn" {
-  description = "IVS channel ARN — used by Lambda to call GetStream"
+  description = "IVS channel ARN"
   value       = aws_ivs_channel.this.arn
 }
 

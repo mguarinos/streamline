@@ -55,23 +55,10 @@ module "lambda" {
 }
 
 # ── S3 ────────────────────────────────────────────────────────────────────────
-#
-# NOTE — two-step bootstrap required on first deploy:
-#
-#   The s3 module bucket policy needs the CloudFront distribution ARN, and the
-#   cloudfront module needs the S3 bucket domain and OAC ID. Terraform cannot
-#   resolve this in a single pass on the very first apply.
-#
-#   Bootstrap sequence:
-#     1. terraform apply -target=module.ivs -target=module.lambda -target=module.s3
-#     2. terraform apply   (creates CloudFront, then applies the bucket policy)
-#
-#   Subsequent applies work in one pass — Terraform already knows all ARNs.
 
 module "s3" {
-  source                      = "./modules/s3"
-  environment                 = var.environment
-  cloudfront_distribution_arn = module.cloudfront.distribution_arn
+  source      = "./modules/s3"
+  environment = var.environment
 }
 
 # ── CloudFront ────────────────────────────────────────────────────────────────
@@ -86,6 +73,37 @@ module "cloudfront" {
   origin_verify_secret      = random_id.origin_verify_secret.hex
   domain_name               = var.domain_name
   acm_certificate_arn       = var.domain_name != "" ? module.dns[0].certificate_arn : ""
+}
+
+# ── S3 bucket policy ──────────────────────────────────────────────────────────
+#
+# Grants the CloudFront OAC read access to the frontend bucket.
+# Placed here rather than inside the s3 module so that the s3 → cloudfront →
+# s3 (bucket policy) chain resolves in a single terraform apply without the
+# need for -target workarounds.
+
+data "aws_iam_policy_document" "s3_oac" {
+  statement {
+    sid     = "AllowCloudFrontOAC"
+    actions = ["s3:GetObject"]
+    resources = ["${module.s3.bucket_arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [module.cloudfront.distribution_arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = module.s3.bucket_name
+  policy = data.aws_iam_policy_document.s3_oac.json
 }
 
 # ── DNS (optional) ────────────────────────────────────────────────────────────

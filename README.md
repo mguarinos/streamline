@@ -96,7 +96,7 @@ cd streamline
 
 ### 2. Bootstrap AWS infrastructure
 
-The bootstrap script creates the Terraform state bucket, DynamoDB lock table, GitHub OIDC provider, and least-privilege IAM deploy role. It is fully idempotent — safe to re-run.
+The bootstrap script creates the Terraform state bucket (with native S3 locking — no DynamoDB required), GitHub OIDC provider, and least-privilege IAM deploy role. It also builds the initial Lambda zip so the first `terraform apply` succeeds without a separate CI run. Fully idempotent — safe to re-run.
 
 ```bash
 ./scripts/bootstrap.sh
@@ -120,11 +120,7 @@ terraform apply -var=environment=prod -var=aws_region=eu-west-1
 
 For a custom domain, add `-var=domain_name=example.com -var=hosted_zone_id=Z0123456789`.
 
-> **Note — first-time apply only:** the S3 bucket policy depends on the CloudFront distribution ARN and vice versa. Run a targeted apply first, then a full apply:
-> ```bash
-> terraform apply -target=module.ivs -target=module.lambda -target=module.s3
-> terraform apply
-> ```
+A single `terraform apply` is all you need — the S3 bucket policy is managed in the root module so Terraform can resolve the dependency order automatically.
 
 ### 5. Note the outputs
 
