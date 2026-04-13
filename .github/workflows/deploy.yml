@@ -209,17 +209,16 @@ jobs:
 
       - name: Smoke test
         run: |
-          FUNCTION_URL=$(aws lambda get-function-url-config \
-            --function-name $LAMBDA_FUNCTION_NAME \
-            --qualifier live \
-            --query 'FunctionUrl' \
+          DOMAIN=$(aws cloudfront get-distribution \
+            --id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --query 'Distribution.DomainName' \
             --output text)
-          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "${FUNCTION_URL}api/health")
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "https://${DOMAIN}/api/health")
           if [ "$STATUS" != "200" ]; then
             echo "Smoke test failed: /api/health returned HTTP $STATUS" >&2
             exit 1
           fi
-          echo "Smoke test passed: /api/health → $STATUS"
+          echo "Smoke test passed: https://${DOMAIN}/api/health → $STATUS"
 
   notify-skipped:
     needs: [prepare, deploy-frontend, deploy-lambda]

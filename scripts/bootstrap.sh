@@ -182,7 +182,7 @@ INLINE_POLICY=$(jq -n \
       {
         Sid: "CloudFront",
         Effect: "Allow",
-        Action: "cloudfront:CreateInvalidation",
+        Action: ["cloudfront:CreateInvalidation","cloudfront:GetDistribution"],
         Resource: "*"
       },
       {
