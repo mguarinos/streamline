@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Lambda npm dependencies
+  - package-ecosystem: npm
+    directory: /lambda
+    schedule:
+      interval: weekly
+    groups:
+      aws-sdk:
+        patterns:
+          - "@aws-sdk/*"
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

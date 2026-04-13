@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: lambda/package-lock.json
+
+      - run: npm ci
+        working-directory: lambda
+
+      - run: npm run lint
+        working-directory: lambda
+
+      - run: npm run build
+        working-directory: lambda
+
+      - run: npm test
+        working-directory: lambda
+
+      - name: Verify dist/index.js exists
+        run: test -f lambda/dist/index.js
+
+  validate-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.10'
+
+      - name: Init (no backend)
+        run: terraform -chdir=terraform init -backend=false
+
+      - name: Validate
+        run: terraform -chdir=terraform validate
+
+      - name: Format check
+        run: terraform -chdir=terraform fmt -check -recursive
