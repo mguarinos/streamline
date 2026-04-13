@@ -3,7 +3,6 @@ import { handleHealth } from './handlers/health';
 import { handleStream } from './handlers/stream';
 import { handleStateChange } from './handlers/state';
 import type { IVSStreamStateEvent } from './handlers/state';
-import { config } from './config';
 import { log } from './logger';
 
 type IncomingEvent = APIGatewayProxyEventV2 | IVSStreamStateEvent;
@@ -26,10 +25,6 @@ function notFound(): APIGatewayProxyResultV2 {
   return { statusCode: 404, headers: BASE_HEADERS, body: JSON.stringify({ error: 'not found' }) };
 }
 
-function forbidden(): APIGatewayProxyResultV2 {
-  return { statusCode: 403, headers: BASE_HEADERS, body: JSON.stringify({ error: 'forbidden' }) };
-}
-
 function internalError(): APIGatewayProxyResultV2 {
   return {
     statusCode: 500,
@@ -47,16 +42,6 @@ export const handler = async (event: IncomingEvent): Promise<APIGatewayProxyResu
 
   const httpEvent = event as APIGatewayProxyEventV2;
   const path = httpEvent.rawPath;
-
-  // X-Origin-Verify: reject requests that bypass CloudFront when secret is set
-  const secret = config.ORIGIN_VERIFY_SECRET;
-  if (secret !== '') {
-    const headerValue = httpEvent.headers?.['x-origin-verify'] ?? '';
-    if (headerValue !== secret) {
-      log.warn('X-Origin-Verify mismatch', { path });
-      return forbidden();
-    }
-  }
 
   try {
     if (path === '/health' || path === '/api/health') {

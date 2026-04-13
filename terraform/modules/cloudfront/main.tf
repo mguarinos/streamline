@@ -11,6 +11,17 @@ locals {
 # directly from IVS infrastructure so we keep caching light.
 # Query strings are included in the cache key and forwarded — IVS uses
 # query params for DVR segment requests.
+# OAC for the Lambda origin — CloudFront signs every request with SigV4.
+# Lambda URL uses authorization_type = "AWS_IAM" and the resource-based
+# policy only allows cloudfront.amazonaws.com with this distribution's ARN.
+resource "aws_cloudfront_origin_access_control" "lambda" {
+  name                              = "streamline-lambda-${var.environment}"
+  description                       = "SigV4 signing for Lambda Function URL origin"
+  origin_access_control_origin_type = "lambda"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_cloudfront_cache_policy" "hls" {
   name        = "streamline-hls-${var.environment}"
   min_ttl     = 1
@@ -47,21 +58,15 @@ resource "aws_cloudfront_distribution" "this" {
 
   # ── Origin 2: Lambda API ──────────────────────────────────────────────────
   origin {
-    domain_name = local.lambda_hostname
-    origin_id   = "lambda-api"
+    domain_name              = local.lambda_hostname
+    origin_id                = "lambda-api"
+    origin_access_control_id = aws_cloudfront_origin_access_control.lambda.id
 
     custom_origin_config {
       http_port              = 80
       https_port             = 443
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
-    }
-
-    # Shared secret — Lambda validates this header to reject requests
-    # that bypass CloudFront and hit the function URL directly.
-    custom_header {
-      name  = "X-Origin-Verify"
-      value = var.origin_verify_secret
     }
   }
 

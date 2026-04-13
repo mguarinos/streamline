@@ -25,18 +25,6 @@ provider "aws" {
   }
 }
 
-# ── Shared secret — CloudFront → Lambda ──────────────────────────────────────
-#
-# CloudFront sends this as X-Origin-Verify on every request to the Lambda
-# origin. Lambda rejects requests that arrive without it, preventing viewers
-# from bypassing CloudFront and hitting the function URL directly.
-# Declared here (not in the cloudfront module) to avoid a circular dependency:
-# cloudfront needs the value to set the header, lambda needs it to validate.
-
-resource "random_id" "origin_verify_secret" {
-  byte_length = 32
-}
-
 # ── IVS ──────────────────────────────────────────────────────────────────────
 
 module "ivs" {
@@ -47,11 +35,10 @@ module "ivs" {
 # ── Lambda ────────────────────────────────────────────────────────────────────
 
 module "lambda" {
-  source               = "./modules/lambda"
-  environment          = var.environment
-  ivs_playback_url     = module.ivs.playback_url
-  ivs_stream_key_arn   = module.ivs.stream_key_arn
-  origin_verify_secret = random_id.origin_verify_secret.hex
+  source             = "./modules/lambda"
+  environment        = var.environment
+  ivs_playback_url   = module.ivs.playback_url
+  ivs_stream_key_arn = module.ivs.stream_key_arn
 }
 
 # ── S3 ────────────────────────────────────────────────────────────────────────
@@ -70,9 +57,25 @@ module "cloudfront" {
   s3_oac_id                 = module.s3.oac_id
   lambda_function_url       = module.lambda.function_url
   ivs_playback_url          = module.ivs.playback_url
-  origin_verify_secret      = random_id.origin_verify_secret.hex
   domain_name               = var.domain_name
   acm_certificate_arn       = var.domain_name != "" ? module.dns[0].certificate_arn : ""
+}
+
+# ── Lambda permission — CloudFront OAC ───────────────────────────────────────
+#
+# Placed here rather than inside the lambda module because both
+# module.lambda (function name / alias) and module.cloudfront (distribution
+# ARN) are needed. Putting it here breaks the circular dependency the same
+# way the S3 bucket policy does.
+
+resource "aws_lambda_permission" "cloudfront_invoke" {
+  statement_id           = "AllowCloudFrontInvoke"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = module.lambda.function_name
+  qualifier              = "live"
+  principal              = "cloudfront.amazonaws.com"
+  function_url_auth_type = "AWS_IAM"
+  source_arn             = module.cloudfront.distribution_arn
 }
 
 # ── S3 bucket policy ──────────────────────────────────────────────────────────

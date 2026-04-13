@@ -16,22 +16,9 @@ jest.mock('./handlers/state', () => ({
   handleStateChange: jest.fn(async () => undefined),
 }));
 
-// Inline the initial config values; the factory runs at hoist time so
-// we cannot reference any const declared in this module here.
-jest.mock('./config', () => ({
-  config: {
-    AWS_REGION: 'eu-west-1',
-    ORIGIN_VERIFY_SECRET: '',
-  },
-}));
-
 jest.mock('./logger', () => ({
   log: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
-
-// Grab a reference to the mocked config object so tests can mutate it.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const mockConfig = (require('./config') as { config: { AWS_REGION: string; ORIGIN_VERIFY_SECRET: string } }).config;
 
 import { handler } from './index';
 import { handleStateChange } from './handlers/state';
@@ -60,36 +47,6 @@ describe('HTTP routing', () => {
   it('returns 404 for an unknown path', async () => {
     const res = await handler(makeEvent('/not-a-real-path'));
     expect((res as { statusCode: number }).statusCode).toBe(404);
-  });
-});
-
-describe('X-Origin-Verify', () => {
-  afterEach(() => {
-    mockConfig.ORIGIN_VERIFY_SECRET = '';
-  });
-
-  it('skips check when ORIGIN_VERIFY_SECRET is empty', async () => {
-    mockConfig.ORIGIN_VERIFY_SECRET = '';
-    const res = await handler(makeEvent('/api/health'));
-    expect((res as { statusCode: number }).statusCode).toBe(200);
-  });
-
-  it('returns 403 when header is missing and secret is set', async () => {
-    mockConfig.ORIGIN_VERIFY_SECRET = 'expected-secret';
-    const res = await handler(makeEvent('/api/health'));
-    expect((res as { statusCode: number }).statusCode).toBe(403);
-  });
-
-  it('returns 403 when header value is wrong', async () => {
-    mockConfig.ORIGIN_VERIFY_SECRET = 'expected-secret';
-    const res = await handler(makeEvent('/api/health', { 'x-origin-verify': 'wrong-value' }));
-    expect((res as { statusCode: number }).statusCode).toBe(403);
-  });
-
-  it('allows request when header matches the secret', async () => {
-    mockConfig.ORIGIN_VERIFY_SECRET = 'expected-secret';
-    const res = await handler(makeEvent('/api/health', { 'x-origin-verify': 'expected-secret' }));
-    expect((res as { statusCode: number }).statusCode).toBe(200);
   });
 });
 

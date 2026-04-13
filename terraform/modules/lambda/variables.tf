@@ -13,12 +13,6 @@ variable "ivs_stream_key_arn" {
   type        = string
 }
 
-variable "origin_verify_secret" {
-  description = "Shared secret sent by CloudFront as X-Origin-Verify. Lambda rejects requests without it."
-  type        = string
-  sensitive   = true
-}
-
 variable "function_zip_path" {
   description = "Path to the Lambda deployment zip, relative to the Terraform working directory"
   type        = string

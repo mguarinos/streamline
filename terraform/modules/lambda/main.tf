@@ -89,7 +89,6 @@ resource "aws_lambda_function" "this" {
       IVS_PLAYBACK_URL       = var.ivs_playback_url
       IVS_DVR_ENABLED        = "true"
       SSM_STREAM_STATE_PARAM = aws_ssm_parameter.stream_state.name
-      ORIGIN_VERIFY_SECRET   = var.origin_verify_secret
       # AWS_REGION is set automatically by the Lambda runtime — do not override.
     }
   }
@@ -108,12 +107,7 @@ resource "aws_lambda_alias" "live" {
 resource "aws_lambda_function_url" "live" {
   function_name      = aws_lambda_function.this.function_name
   qualifier          = aws_lambda_alias.live.name
-  authorization_type = "NONE"
-
-  cors {
-    allow_origins = ["*"]
-    allow_methods = ["GET"]
-  }
+  authorization_type = "AWS_IAM"
 }
 
 # ── EventBridge — IVS stream state change events ──────────────────────────────
@@ -143,22 +137,3 @@ resource "aws_lambda_permission" "eventbridge" {
   source_arn    = aws_cloudwatch_event_rule.ivs_stream_state.arn
 }
 
-# Lambda Function URLs with authorization_type = "NONE" require two permissions:
-# 1. lambda:InvokeFunctionUrl (Function URL-specific)
-# 2. lambda:InvokeFunction (general invocation — required for alias-based URLs)
-resource "aws_lambda_permission" "function_url_public" {
-  statement_id           = "FunctionURLAllowPublicAccess"
-  action                 = "lambda:InvokeFunctionUrl"
-  function_name          = aws_lambda_function.this.function_name
-  qualifier              = aws_lambda_alias.live.name
-  principal              = "*"
-  function_url_auth_type = "NONE"
-}
-
-resource "aws_lambda_permission" "function_url_invoke" {
-  statement_id  = "FunctionURLAllowInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.this.function_name
-  qualifier     = aws_lambda_alias.live.name
-  principal     = "*"
-}

@@ -23,12 +23,6 @@ variable "ivs_playback_url" {
   type        = string
 }
 
-variable "origin_verify_secret" {
-  description = "Shared secret sent as X-Origin-Verify header to Lambda. Lambda rejects requests without it."
-  type        = string
-  sensitive   = true
-}
-
 variable "domain_name" {
   description = "Custom domain name. When non-empty, CloudFront serves live.<domain_name> with the provided ACM certificate."
   type        = string
