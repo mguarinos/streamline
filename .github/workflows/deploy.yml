@@ -22,6 +22,8 @@ jobs:
     outputs:
       semver: ${{ steps.version.outputs.semver }}
       short_sha: ${{ steps.version.outputs.short_sha }}
+      frontend_changed: ${{ steps.changes.outputs.frontend }}
+      lambda_changed: ${{ steps.changes.outputs.lambda }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,6 +38,39 @@ jobs:
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           echo "$SEMVER" > VERSION
 
+      - name: Detect changed paths since previous tag
+        id: changes
+        run: |
+          # Find the previous semver tag. If none exists (first release),
+          # fall back to the initial commit so everything is treated as changed.
+          PREV_TAG=$(git tag --sort=-version:refname \
+            | grep -v "^${GITHUB_REF_NAME}$" \
+            | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            BASE=$(git rev-list --max-parents=0 HEAD)
+            echo "No previous tag found — comparing against initial commit ($BASE)"
+          else
+            BASE="$PREV_TAG"
+            echo "Comparing $BASE → $GITHUB_REF_NAME"
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE"..HEAD)
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          if echo "$CHANGED" | grep -q "^frontend/"; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$CHANGED" | grep -q "^lambda/"; then
+            echo "lambda=true" >> $GITHUB_OUTPUT
+          else
+            echo "lambda=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: version-file
@@ -44,6 +79,7 @@ jobs:
 
   deploy-frontend:
     needs: prepare
+    if: needs.prepare.outputs.frontend_changed == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -83,6 +119,7 @@ jobs:
 
   deploy-lambda:
     needs: prepare
+    if: needs.prepare.outputs.lambda_changed == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
