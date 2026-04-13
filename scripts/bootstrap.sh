@@ -140,7 +140,10 @@ TRUST_POLICY=$(jq -n \
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         StringLike: {
-          "token.actions.githubusercontent.com:sub": "repo:\($repo):ref:refs/tags/v*"
+          "token.actions.githubusercontent.com:sub": [
+            "repo:\($repo):ref:refs/tags/v*",
+            "repo:\($repo):ref:refs/heads/main"
+          ]
         }
       }
     }]
@@ -266,11 +269,13 @@ echo "  1. cd terraform"
 echo "  2. terraform init -backend-config=backend.hcl"
 echo "  3. terraform plan"
 echo "  4. terraform apply"
-echo "  5. Add these GitHub secrets to your repo:"
-echo "       AWS_DEPLOY_ROLE_ARN: arn:aws:iam::${ACCOUNT_ID}:role/streamline-github-deploy-${ENVIRONMENT}"
-echo "       AWS_REGION: ${AWS_REGION}"
-echo "       S3_BUCKET_NAME: (from terraform output s3_bucket_name)"
-echo "       CLOUDFRONT_DISTRIBUTION_ID: (from terraform output)"
-echo "       LAMBDA_FUNCTION_NAME: (from terraform output)"
+echo "  5. Go to Settings → Secrets and variables → Actions in your GitHub repo:"
+echo "     Secrets (sensitive — use 'New repository secret'):"
+echo "       AWS_DEPLOY_ROLE_ARN  →  arn:aws:iam::${ACCOUNT_ID}:role/streamline-github-deploy-${ENVIRONMENT}"
+echo "     Variables (non-sensitive — use 'New repository variable'):"
+echo "       AWS_REGION               →  ${AWS_REGION}"
+echo "       S3_BUCKET_NAME           →  (from: terraform -chdir=terraform output -raw s3_bucket_name)"
+echo "       CLOUDFRONT_DISTRIBUTION_ID → (from: terraform -chdir=terraform output -raw cloudfront_distribution_id)"
+echo "       LAMBDA_FUNCTION_NAME     →  (from: terraform -chdir=terraform output -raw lambda_function_name)"
 echo ""
 echo "  6. git tag v0.1.0 && git push origin v0.1.0"

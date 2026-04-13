@@ -20,14 +20,14 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
 
 data "aws_iam_policy_document" "lambda_custom" {
   statement {
-    sid    = "SsmStreamState"
-    actions = ["ssm:GetParameter", "ssm:PutParameter"]
+    sid       = "SsmStreamState"
+    actions   = ["ssm:GetParameter", "ssm:PutParameter"]
     resources = [aws_ssm_parameter.stream_state.arn]
   }
 
   statement {
-    sid     = "SecretManagerStreamKey"
-    actions = ["secretsmanager:GetSecretValue"]
+    sid       = "SecretManagerStreamKey"
+    actions   = ["secretsmanager:GetSecretValue"]
     resources = [var.ivs_stream_key_arn]
   }
 }
@@ -70,6 +70,7 @@ resource "aws_ssm_parameter" "stream_state" {
 
 resource "aws_lambda_function" "this" {
   function_name = "streamline-${var.environment}"
+  description   = "Streamline API — stream status and health endpoints"
   role          = aws_iam_role.lambda.arn
 
   runtime     = "nodejs22.x"
@@ -140,4 +141,16 @@ resource "aws_lambda_permission" "eventbridge" {
   qualifier     = aws_lambda_alias.live.name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.ivs_stream_state.arn
+}
+
+# Required for Lambda Function URLs with authorization_type = "NONE".
+# Without this the service control policy blocks public invocations and
+# the function URL returns 403 Forbidden even though auth is disabled.
+resource "aws_lambda_permission" "function_url_public" {
+  statement_id           = "FunctionURLAllowPublicAccess"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.this.function_name
+  qualifier              = aws_lambda_alias.live.name
+  principal              = "*"
+  function_url_auth_type = "NONE"
 }

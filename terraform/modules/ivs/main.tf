@@ -35,6 +35,9 @@ resource "aws_secretsmanager_secret" "stream_key" {
 }
 
 resource "aws_secretsmanager_secret_version" "stream_key" {
-  secret_id     = aws_secretsmanager_secret.stream_key.id
-  secret_string = data.aws_ivs_stream_key.this.value
+  secret_id = aws_secretsmanager_secret.stream_key.id
+  secret_string = jsonencode({
+    url = aws_ivs_channel.this.ingest_endpoint
+    key = data.aws_ivs_stream_key.this.value
+  })
 }

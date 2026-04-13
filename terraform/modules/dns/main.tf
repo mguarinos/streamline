@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     aws = {
-      source                = "hashicorp/aws"
-      version               = "~> 5.0"
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
       # CloudFront requires ACM certificates issued in us-east-1 regardless of
       # the main region. This alias is passed in from the root module.
       configuration_aliases = [aws.us_east_1]
@@ -50,7 +50,7 @@ resource "aws_route53_record" "live" {
   type    = "A"
 
   alias {
-    name    = var.cloudfront_domain
+    name = var.cloudfront_domain
     # Z2FDTNDATAQYW2 is the fixed hosted zone ID for all CloudFront distributions.
     zone_id                = "Z2FDTNDATAQYW2"
     evaluate_target_health = false

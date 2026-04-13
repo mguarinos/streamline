@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
 
 jobs:
   prepare:
@@ -119,7 +119,7 @@ jobs:
       - name: Sync versioned assets (long cache)
         run: |
           aws s3 sync frontend/ \
-            s3://${{ secrets.S3_BUCKET_NAME }} \
+            s3://${{ vars.S3_BUCKET_NAME }} \
             --delete \
             --exclude "index.html" \
             --cache-control "public, max-age=31536000, immutable"
@@ -127,13 +127,13 @@ jobs:
       - name: Sync index.html (no cache)
         run: |
           aws s3 cp frontend/index.html \
-            s3://${{ secrets.S3_BUCKET_NAME }}/index.html \
+            s3://${{ vars.S3_BUCKET_NAME }}/index.html \
             --cache-control "public, max-age=0, must-revalidate"
 
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
 
   deploy-lambda:

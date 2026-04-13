@@ -1,6 +1,4 @@
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { handler } from './index';
-import { handleStateChange } from './handlers/state';
 
 jest.mock('./handlers/health', () => ({
   handleHealth: jest.fn(() => ({ status: 'ok', version: '1.0.0', region: 'eu-west-1' })),
@@ -18,17 +16,25 @@ jest.mock('./handlers/state', () => ({
   handleStateChange: jest.fn(async () => undefined),
 }));
 
-// Config is read at call time inside the handler — use a mutable object
-// so individual tests can temporarily override ORIGIN_VERIFY_SECRET.
-const mockConfig = {
-  AWS_REGION: 'eu-west-1',
-  ORIGIN_VERIFY_SECRET: '',
-};
-jest.mock('./config', () => ({ config: mockConfig }));
+// Inline the initial config values; the factory runs at hoist time so
+// we cannot reference any const declared in this module here.
+jest.mock('./config', () => ({
+  config: {
+    AWS_REGION: 'eu-west-1',
+    ORIGIN_VERIFY_SECRET: '',
+  },
+}));
 
 jest.mock('./logger', () => ({
   log: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
+
+// Grab a reference to the mocked config object so tests can mutate it.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mockConfig = (require('./config') as { config: { AWS_REGION: string; ORIGIN_VERIFY_SECRET: string } }).config;
+
+import { handler } from './index';
+import { handleStateChange } from './handlers/state';
 
 function makeEvent(rawPath: string, headers: Record<string, string> = {}): APIGatewayProxyEventV2 {
   return { rawPath, headers, requestContext: {} } as unknown as APIGatewayProxyEventV2;

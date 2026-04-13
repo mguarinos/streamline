@@ -84,8 +84,8 @@ module "cloudfront" {
 
 data "aws_iam_policy_document" "s3_oac" {
   statement {
-    sid     = "AllowCloudFrontOAC"
-    actions = ["s3:GetObject"]
+    sid       = "AllowCloudFrontOAC"
+    actions   = ["s3:GetObject"]
     resources = ["${module.s3.bucket_arn}/*"]
 
     principals {

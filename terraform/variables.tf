@@ -1,13 +1,13 @@
 variable "environment" {
   description = "Deployment environment (e.g. prod, staging)"
   type        = string
-  default     = "prod"
+  default     = ""
 }
 
 variable "aws_region" {
   description = "Primary AWS region for all resources"
   type        = string
-  default     = "eu-west-1"
+  default     = ""
 }
 
 variable "domain_name" {

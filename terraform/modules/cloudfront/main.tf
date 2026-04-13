@@ -31,11 +31,12 @@ resource "aws_cloudfront_cache_policy" "hls" {
 }
 
 resource "aws_cloudfront_distribution" "this" {
-  enabled      = true
-  comment      = "streamline-${var.environment}"
-  price_class  = "PriceClass_100"
-  http_version = "http2and3"
-  aliases      = var.domain_name != "" ? ["live.${var.domain_name}"] : []
+  enabled             = true
+  comment             = "streamline-${var.environment}"
+  default_root_object = "index.html"
+  price_class         = "PriceClass_100"
+  http_version        = "http2and3"
+  aliases             = var.domain_name != "" ? ["live.${var.domain_name}"] : []
 
   # ── Origin 1: S3 frontend ─────────────────────────────────────────────────
   origin {

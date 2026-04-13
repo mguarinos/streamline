@@ -1,7 +1,11 @@
-import { SSMClient } from '@aws-sdk/client-ssm';
-import { handleStream, clearCache } from './stream';
+// mockSend must be declared before jest.mock (ts-jest hoists mock* vars alongside jest.mock)
+const mockSend = jest.fn();
 
-jest.mock('@aws-sdk/client-ssm');
+jest.mock('@aws-sdk/client-ssm', () => ({
+  SSMClient: jest.fn(() => ({ send: mockSend })),
+  GetParameterCommand: jest.fn(),
+}));
+
 jest.mock('../config', () => ({
   config: {
     AWS_REGION: 'eu-west-1',
@@ -14,8 +18,7 @@ jest.mock('../logger', () => ({
   log: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
-const mockSend = jest.fn();
-(SSMClient as jest.Mock).mockImplementation(() => ({ send: mockSend }));
+import { handleStream, clearCache } from './stream';
 
 beforeEach(() => {
   clearCache();
