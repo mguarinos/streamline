@@ -232,7 +232,7 @@ section "Building Lambda deployment package"
 
 LAMBDA_DIR="$(dirname "$0")/../lambda"
 
-(cd "$LAMBDA_DIR" && npm ci && npm run package)
+(cd "$LAMBDA_DIR" && npm install && npm run package)
 
 success "lambda/function.zip created"
 
