@@ -1,7 +1,7 @@
 resource "aws_ivs_channel" "this" {
   name         = "${var.environment}-streamline"
   type         = "STANDARD"
-  latency_mode = "LOW_LATENCY"
+  latency_mode = "LOW"
   authorized   = false
 
   lifecycle {
@@ -21,7 +21,8 @@ resource "aws_ivs_channel" "this" {
   # DVR live-only with no S3 recording bucket required.
 }
 
-resource "aws_ivs_stream_key" "this" {
+# Read back the stream key that IVS creates automatically with the channel.
+data "aws_ivs_stream_key" "this" {
   channel_arn = aws_ivs_channel.this.arn
 }
 
@@ -35,5 +36,5 @@ resource "aws_secretsmanager_secret" "stream_key" {
 
 resource "aws_secretsmanager_secret_version" "stream_key" {
   secret_id     = aws_secretsmanager_secret.stream_key.id
-  secret_string = aws_ivs_stream_key.this.value
+  secret_string = data.aws_ivs_stream_key.this.value
 }
