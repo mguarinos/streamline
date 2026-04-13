@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "ts-node src/local.ts",
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "eslint src/",
     "package": "npm run build && zip -r function.zip dist/",
     "test": "jest"
   },
@@ -14,14 +14,14 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.140",
-    "@types/jest": "^29.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^10.0.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^30.0.0",
     "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
+    "typescript": "^6.0.0"
   }
 }
