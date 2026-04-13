@@ -72,7 +72,7 @@ resource "aws_lambda_function" "this" {
   function_name = "streamline-${var.environment}"
   role          = aws_iam_role.lambda.arn
 
-  runtime     = "nodejs24.x"
+  runtime     = "nodejs22.x"
   handler     = "dist/index.handler"
   memory_size = 256
   timeout     = 10
