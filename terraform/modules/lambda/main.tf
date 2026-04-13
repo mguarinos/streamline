@@ -111,7 +111,7 @@ resource "aws_lambda_function_url" "live" {
 
   cors {
     allow_origins = ["*"]
-    allow_methods = ["GET", "OPTIONS"]
+    allow_methods = ["GET"]
   }
 }
 
