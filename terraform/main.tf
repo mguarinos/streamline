@@ -69,13 +69,21 @@ module "cloudfront" {
 # way the S3 bucket policy does.
 
 resource "aws_lambda_permission" "cloudfront_invoke" {
-  statement_id           = "AllowCloudFrontInvoke"
-  action                 = "lambda:InvokeFunctionUrl"
-  function_name          = module.lambda.function_name
-  qualifier              = "live"
-  principal              = "cloudfront.amazonaws.com"
-  function_url_auth_type = "AWS_IAM"
-  source_arn             = module.cloudfront.distribution_arn
+  statement_id  = "AllowCloudFrontInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda.function_name
+  qualifier     = "live"
+  principal     = "cloudfront.amazonaws.com"
+  source_arn    = module.cloudfront.distribution_arn
+}
+
+resource "aws_lambda_permission" "cloudfront_invoke_url" {
+  statement_id  = "AllowCloudFrontInvokeUrl"
+  action        = "lambda:InvokeFunctionUrl"
+  function_name = module.lambda.function_name
+  qualifier     = "live"
+  principal     = "cloudfront.amazonaws.com"
+  source_arn    = module.cloudfront.distribution_arn
 }
 
 # ── S3 bucket policy ──────────────────────────────────────────────────────────
