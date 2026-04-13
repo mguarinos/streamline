@@ -1,38 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Streamline</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23e53e3e'/></svg>">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23e53e3e'/></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.21.0/video-js.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.21.0/video.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@2/dist/videojs-hls-quality-selector.css" />
-  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@4/dist/videojs-contrib-quality-levels.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@2/dist/videojs-hls-quality-selector.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@2/dist/videojs-hls-quality-selector.css" />
+  <script
+    src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@4/dist/videojs-contrib-quality-levels.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@2/dist/videojs-hls-quality-selector.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <div id="top-bar">
-    <span id="stream-title">Live</span>
-    <span id="status-badge" class="badge badge--connecting">CONNECTING</span>
+  <div id="app">
+    <header id="top-bar">
+      <div id="top-bar-left">
+        <svg id="logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M3.05 12a9 9 0 0 1 9-9M12 3.05a9 9 0 0 1 9 9M20.95 12a9 9 0 0 1-9 9M12 20.95a9 9 0 0 1-9-9"
+            stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" />
+        </svg>
+        <span id="stream-title">Streamline</span>
+      </div>
+      <span id="status-badge" class="badge badge--connecting">
+        <span class="badge__dot"></span>
+        <span class="badge__label">Connecting</span>
+      </span>
+    </header>
+
+    <main id="main">
+      <div id="player-wrap" class="hidden">
+        <div id="player-container">
+          <video id="player" class="video-js vjs-big-play-centered"></video>
+          <div id="autoplay-blocked" class="hidden">
+            <button id="unmute-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+              Tap to play
+            </button>
+          </div>
+        </div>
+        <div id="dvr-hint" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="11,17 6,12 11,7" />
+            <line x1="6" y1="12" x2="18" y2="12" />
+          </svg>
+          Drag the timeline to rewind up to 4 hours
+        </div>
+      </div>
+
+      <div id="offline-message" class="hidden" aria-live="polite">
+        <div id="offline-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.87v6.259a1 1 0 0 1-1.447.894L15 14" />
+            <rect x="2" y="7" width="13" height="10" rx="2" />
+          </svg>
+        </div>
+        <h2>Stream offline</h2>
+        <p>The stream isn't live right now.<br>Check back soon.</p>
+      </div>
+    </main>
   </div>
-
-  <div id="player-container" class="hidden">
-    <video id="player" class="video-js"></video>
-  </div>
-
-  <div id="autoplay-blocked" class="hidden">
-    <button id="unmute-btn" type="button">▶ Tap to unmute and play</button>
-  </div>
-
-  <div id="dvr-hint">← Drag the timeline to rewind up to 4 hours</div>
-
-  <div id="offline-message">
-    <p>Stream is currently offline.</p>
-    <p>Check back soon.</p>
-  </div>
-
   <script src="player.js" type="module"></script>
 </body>
+
 </html>
