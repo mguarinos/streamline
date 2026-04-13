@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "engines": { "node": ">=22" },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "dev": "ts-node src/local.ts",
     "lint": "eslint src/",
     "package": "npm run build && zip -r function.zip dist/",

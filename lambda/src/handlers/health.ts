@@ -9,8 +9,12 @@ interface HealthResponse {
 }
 
 function readVersion(): string {
-  const versionPath = path.join(__dirname, '..', 'VERSION');
-  return fs.readFileSync(versionPath, 'utf-8').trim();
+  try {
+    const versionPath = path.join(__dirname, '..', 'VERSION');
+    return fs.readFileSync(versionPath, 'utf-8').trim();
+  } catch {
+    return 'unknown';
+  }
 }
 
 export function handleHealth(): HealthResponse {

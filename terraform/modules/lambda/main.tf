@@ -143,9 +143,9 @@ resource "aws_lambda_permission" "eventbridge" {
   source_arn    = aws_cloudwatch_event_rule.ivs_stream_state.arn
 }
 
-# Required for Lambda Function URLs with authorization_type = "NONE".
-# Without this the service control policy blocks public invocations and
-# the function URL returns 403 Forbidden even though auth is disabled.
+# Lambda Function URLs with authorization_type = "NONE" require two permissions:
+# 1. lambda:InvokeFunctionUrl (Function URL-specific)
+# 2. lambda:InvokeFunction (general invocation — required for alias-based URLs)
 resource "aws_lambda_permission" "function_url_public" {
   statement_id           = "FunctionURLAllowPublicAccess"
   action                 = "lambda:InvokeFunctionUrl"
@@ -153,4 +153,12 @@ resource "aws_lambda_permission" "function_url_public" {
   qualifier              = aws_lambda_alias.live.name
   principal              = "*"
   function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "function_url_invoke" {
+  statement_id  = "FunctionURLAllowInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.this.function_name
+  qualifier     = aws_lambda_alias.live.name
+  principal     = "*"
 }
