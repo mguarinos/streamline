@@ -223,7 +223,27 @@ EOF
 
 success "Written to terraform/backend.hcl"
 
-# ── 8. Build Lambda zip ───────────────────────────────────────────────────────
+# ── 8. Write terraform/terraform.tfvars ──────────────────────────────────────
+
+section "Writing terraform/terraform.tfvars"
+
+TFVARS_FILE="$(dirname "$0")/../terraform/terraform.tfvars"
+
+cat > "$TFVARS_FILE" <<EOF
+environment = "${ENVIRONMENT}"
+aws_region  = "${AWS_REGION}"
+
+# Optional — uncomment and fill in to enable custom domain support:
+# domain_name    = "example.com"
+# hosted_zone_id = "Z0123456789ABCDEF"
+
+# Optional — email address for CloudWatch alarm notifications:
+# alarm_email = "ops@example.com"
+EOF
+
+success "Written to terraform/terraform.tfvars"
+
+# ── 9. Build Lambda zip ───────────────────────────────────────────────────────
 #
 # Produces lambda/function.zip so the first terraform apply can provision the
 # function without a separate CI run.
@@ -236,15 +256,15 @@ LAMBDA_DIR="$(dirname "$0")/../lambda"
 
 success "lambda/function.zip created"
 
-# ── 9. Summary ────────────────────────────────────────────────────────────────
+# ── 10. Summary ───────────────────────────────────────────────────────────────
 
 echo ""
 echo "✓ Bootstrap complete"
 echo ""
 echo "Next steps:"
 echo "  1. cd terraform"
-echo "  2. terraform init -backend-config=../terraform/backend.hcl"
-echo "  3. terraform plan -var=environment=${ENVIRONMENT} -var=aws_region=${AWS_REGION}"
+echo "  2. terraform init -backend-config=backend.hcl"
+echo "  3. terraform plan"
 echo "  4. terraform apply"
 echo "  5. Add these GitHub secrets to your repo:"
 echo "       AWS_DEPLOY_ROLE_ARN: arn:aws:iam::${ACCOUNT_ID}:role/streamline-github-deploy-${ENVIRONMENT}"

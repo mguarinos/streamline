@@ -108,19 +108,25 @@ You will be prompted for AWS region, environment name, and your GitHub org/repo.
 
 ```bash
 cd terraform
-terraform init -backend-config=../terraform/backend.hcl
+terraform init -backend-config=backend.hcl
 ```
 
 ### 4. Plan and apply
 
 ```bash
-terraform plan -var=environment=prod -var=aws_region=eu-west-1
-terraform apply -var=environment=prod -var=aws_region=eu-west-1
+terraform plan
+terraform apply
 ```
 
-For a custom domain, add `-var=domain_name=example.com -var=hosted_zone_id=Z0123456789`.
+`bootstrap.sh` writes a `terraform.tfvars` with your environment and region, so no `-var` flags are needed. To enable optional features, uncomment the relevant lines in `terraform/terraform.tfvars` before applying:
 
-A single `terraform apply` is all you need — the S3 bucket policy is managed in the root module so Terraform can resolve the dependency order automatically.
+```hcl
+# domain_name    = "example.com"
+# hosted_zone_id = "Z0123456789ABCDEF"
+# alarm_email    = "ops@example.com"
+```
+
+A single `terraform apply` is all you need — the S3 bucket policy is managed in the root module so Terraform resolves the dependency order automatically.
 
 ### 5. Note the outputs
 
