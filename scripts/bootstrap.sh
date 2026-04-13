@@ -11,7 +11,7 @@ section() { echo ""; echo "── $* ──"; }
 
 section "Checking prerequisites"
 
-for cmd in aws terraform jq; do
+for cmd in aws terraform jq npm; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "Error: '$cmd' is required but not installed." >&2
     exit 1
