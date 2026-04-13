@@ -10,8 +10,8 @@ provider "aws" {
   }
 }
 
-# Used exclusively by the dns module — ACM certificates for CloudFront
-# must be issued in us-east-1 regardless of the main region.
+# Used by the dns module (ACM certificates for CloudFront must be in us-east-1)
+# and by the monitoring module (CloudFront metrics are only in us-east-1).
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
@@ -25,6 +25,18 @@ provider "aws" {
   }
 }
 
+# ── Shared secret — CloudFront → Lambda ──────────────────────────────────────
+#
+# CloudFront sends this as X-Origin-Verify on every request to the Lambda
+# origin. Lambda rejects requests that arrive without it, preventing viewers
+# from bypassing CloudFront and hitting the function URL directly.
+# Declared here (not in the cloudfront module) to avoid a circular dependency:
+# cloudfront needs the value to set the header, lambda needs it to validate.
+
+resource "random_id" "origin_verify_secret" {
+  byte_length = 32
+}
+
 # ── IVS ──────────────────────────────────────────────────────────────────────
 
 module "ivs" {
@@ -35,11 +47,11 @@ module "ivs" {
 # ── Lambda ────────────────────────────────────────────────────────────────────
 
 module "lambda" {
-  source             = "./modules/lambda"
-  environment        = var.environment
-  ivs_playback_url   = module.ivs.playback_url
-  ivs_channel_arn    = module.ivs.channel_arn
-  ivs_stream_key_arn = module.ivs.stream_key_arn
+  source               = "./modules/lambda"
+  environment          = var.environment
+  ivs_playback_url     = module.ivs.playback_url
+  ivs_stream_key_arn   = module.ivs.stream_key_arn
+  origin_verify_secret = random_id.origin_verify_secret.hex
 }
 
 # ── S3 ────────────────────────────────────────────────────────────────────────
@@ -71,6 +83,7 @@ module "cloudfront" {
   s3_oac_id                 = module.s3.oac_id
   lambda_function_url       = module.lambda.function_url
   ivs_playback_url          = module.ivs.playback_url
+  origin_verify_secret      = random_id.origin_verify_secret.hex
   domain_name               = var.domain_name
   acm_certificate_arn       = var.domain_name != "" ? module.dns[0].certificate_arn : ""
 }
@@ -88,4 +101,21 @@ module "dns" {
   domain_name       = var.domain_name
   cloudfront_domain = module.cloudfront.distribution_domain
   hosted_zone_id    = var.hosted_zone_id
+}
+
+# ── Monitoring ────────────────────────────────────────────────────────────────
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  environment                = var.environment
+  lambda_function_name       = module.lambda.function_name
+  cloudfront_distribution_id = module.cloudfront.distribution_id
+  cloudfront_domain          = module.cloudfront.distribution_domain
+  alarm_email                = var.alarm_email
 }

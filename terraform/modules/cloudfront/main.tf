@@ -1,24 +1,9 @@
-terraform {
-  required_providers {
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
-  }
-}
-
 locals {
   # Extract hostname from URLs.
   # Lambda function URL:  https://<id>.lambda-url.<region>.on.aws/
   # IVS playback URL:     https://<id>.cloudfront.net/ivs/v1/.../master.m3u8
   lambda_hostname = regex("https://([^/]+)", var.lambda_function_url)[0]
   ivs_hostname    = regex("https://([^/]+)", var.ivs_playback_url)[0]
-}
-
-# Shared secret sent as a custom header to Lambda.
-# Lambda can validate X-Origin-Verify to reject requests that bypass CloudFront.
-resource "random_id" "origin_verify_secret" {
-  byte_length = 32
 }
 
 # Custom cache policy for HLS segments.
@@ -47,6 +32,7 @@ resource "aws_cloudfront_cache_policy" "hls" {
 
 resource "aws_cloudfront_distribution" "this" {
   enabled      = true
+  comment      = "streamline-${var.environment}"
   price_class  = "PriceClass_100"
   http_version = "http2and3"
   aliases      = var.domain_name != "" ? ["live.${var.domain_name}"] : []
@@ -70,9 +56,11 @@ resource "aws_cloudfront_distribution" "this" {
       origin_ssl_protocols   = ["TLSv1.2"]
     }
 
+    # Shared secret — Lambda validates this header to reject requests
+    # that bypass CloudFront and hit the function URL directly.
     custom_header {
       name  = "X-Origin-Verify"
-      value = random_id.origin_verify_secret.hex
+      value = var.origin_verify_secret
     }
   }
 

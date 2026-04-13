@@ -8,14 +8,15 @@ variable "ivs_playback_url" {
   type        = string
 }
 
-variable "ivs_channel_arn" {
-  description = "IVS channel ARN — Lambda uses this to call GetStream"
-  type        = string
-}
-
 variable "ivs_stream_key_arn" {
   description = "Secrets Manager ARN for the IVS stream key — granted in Lambda IAM policy"
   type        = string
+}
+
+variable "origin_verify_secret" {
+  description = "Shared secret sent by CloudFront as X-Origin-Verify. Lambda rejects requests without it."
+  type        = string
+  sensitive   = true
 }
 
 variable "function_zip_path" {

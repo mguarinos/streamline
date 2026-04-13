@@ -16,6 +16,8 @@ const badgeEl          = document.getElementById('status-badge');
 const playerContainer  = document.getElementById('player-container');
 const dvrHintEl        = document.getElementById('dvr-hint');
 const offlineEl        = document.getElementById('offline-message');
+const autoplayBlockEl  = document.getElementById('autoplay-blocked');
+const unmuteBtn        = document.getElementById('unmute-btn');
 
 /** @type {import('video.js').VideoJsPlayer | null} */
 let player = null;
@@ -53,12 +55,31 @@ function initPlayer(playbackUrl) {
     fluid: false,
     responsive: false,
   });
+
+  // Quality selector — appears in the control bar when multiple renditions
+  // are available in the HLS manifest.
+  player.qualityLevels();
+  player.hlsQualitySelector({ displayCurrentQuality: true });
+
+  // Mobile autoplay: browsers block autoplay with audio. We start muted
+  // (policy-compliant) and show an unmute overlay if autoplay itself fails.
+  player.on('autoplay-failure', () => {
+    autoplayBlockEl.classList.remove('hidden');
+  });
+
+  unmuteBtn.addEventListener('click', () => {
+    player.muted(false);
+    player.play();
+    autoplayBlockEl.classList.add('hidden');
+  });
 }
 
 function disposePlayer() {
   if (!player) return;
   player.dispose();
   player = null;
+
+  autoplayBlockEl.classList.add('hidden');
 
   // dispose() removes the <video> element from the DOM; recreate it
   // so a subsequent initPlayer() has a target element to attach to.

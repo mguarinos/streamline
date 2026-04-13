@@ -6,8 +6,8 @@
  *   npm run dev
  *
  * The /api/stream endpoint returns status "idle" locally because
- * IVS_CHANNEL_ARN in .env.example is fake — ResourceNotFoundException
- * is caught and mapped to idle gracefully. The player still renders
+ * STREAM_STATUS_MOCK=idle is set in .env.example, bypassing the SSM
+ * call that requires real AWS credentials. The player still renders
  * using the public HLS stream set in IVS_PLAYBACK_URL.
  */
 

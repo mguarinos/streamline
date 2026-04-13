@@ -4,6 +4,10 @@ resource "aws_ivs_channel" "this" {
   latency_mode = "LOW_LATENCY"
   authorized   = false
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   # DVR — no recording_configuration_arn is needed.
   #
   # AWS IVS STANDARD channels maintain a rolling 4-hour DVR window in IVS's
@@ -23,6 +27,10 @@ resource "aws_ivs_stream_key" "this" {
 
 resource "aws_secretsmanager_secret" "stream_key" {
   name = "streamline/${var.environment}/stream-key"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "stream_key" {

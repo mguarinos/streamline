@@ -223,7 +223,20 @@ EOF
 
 success "Written to terraform/backend.hcl"
 
-# ── 8. Summary ────────────────────────────────────────────────────────────────
+# ── 8. Build Lambda zip ───────────────────────────────────────────────────────
+#
+# Produces lambda/function.zip so the first terraform apply can provision the
+# function without a separate CI run.
+
+section "Building Lambda deployment package"
+
+LAMBDA_DIR="$(dirname "$0")/../lambda"
+
+(cd "$LAMBDA_DIR" && npm ci && npm run package)
+
+success "lambda/function.zip created"
+
+# ── 9. Summary ────────────────────────────────────────────────────────────────
 
 echo ""
 echo "✓ Bootstrap complete"

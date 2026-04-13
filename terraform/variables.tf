@@ -21,3 +21,9 @@ variable "hosted_zone_id" {
   type        = string
   default     = ""
 }
+
+variable "alarm_email" {
+  description = "Email address for CloudWatch alarm notifications. Leave empty to skip SNS email subscriptions."
+  type        = string
+  default     = ""
+}

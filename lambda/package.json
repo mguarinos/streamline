@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@aws-sdk/client-ivs": "^3"
+    "@aws-sdk/client-ssm": "^3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.140",

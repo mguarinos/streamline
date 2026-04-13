@@ -134,7 +134,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: lambda/package-lock.json
 
@@ -201,3 +201,14 @@ jobs:
             exit 1
           fi
           echo "Smoke test passed: /api/health → $STATUS"
+
+  notify-skipped:
+    needs: [prepare, deploy-frontend, deploy-lambda]
+    if: always() && needs.deploy-frontend.result == 'skipped' && needs.deploy-lambda.result == 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log skipped deploy
+        run: |
+          echo "### Skipped deploy for ${{ needs.prepare.outputs.semver }}" >> $GITHUB_STEP_SUMMARY
+          echo "No changes detected in frontend/ or lambda/ — nothing to deploy." >> $GITHUB_STEP_SUMMARY
+          echo "SHA: ${{ needs.prepare.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY

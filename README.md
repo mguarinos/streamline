@@ -4,8 +4,8 @@
 
 [![CI](https://github.com/YOUR_ORG/streamline/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/streamline/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Terraform](https://img.shields.io/badge/IaC-Terraform_1.7-7B42BC?logo=terraform)](terraform/)
-[![Node](https://img.shields.io/badge/Runtime-Node_20-339933?logo=nodedotjs)](lambda/)
+[![Terraform](https://img.shields.io/badge/IaC-Terraform_1.10-7B42BC?logo=terraform)](terraform/)
+[![Node](https://img.shields.io/badge/Runtime-Node_24-339933?logo=nodedotjs)](lambda/)
 
 ---
 
