@@ -199,17 +199,21 @@ The Lambda Function URL uses `authorization_type = "AWS_IAM"`. Access is granted
 
 ## Deployment & Versioning
 
-Every production deploy is triggered by a semver tag:
+Every production deploy is triggered by bumping the `VERSION` file in a PR and merging it to `main`:
 
 ```bash
-git tag v1.2.0 && git push origin v1.2.0
+echo "1.2.0" > VERSION
+git add VERSION && git commit -m "chore: release 1.2.0"
+# open a PR, merge it — deploy fires automatically
 ```
 
-The workflow runs three jobs:
+On merge the pipeline runs three jobs in parallel:
 
-1. **prepare** — extracts semver + short SHA, uploads a `VERSION` artifact
-2. **deploy-frontend** *(parallel)* — syncs assets to S3 with immutable cache headers, syncs `index.html` with `must-revalidate`, invalidates CloudFront
-3. **deploy-lambda** *(parallel)* — builds TypeScript, prunes devDependencies, zips `dist/` + `node_modules/` + `VERSION`, uploads to Lambda, waits for propagation, publishes an immutable version snapshot, updates the `live` alias, runs smoke test through CloudFront
+1. **prepare** — reads `VERSION`, detects which paths changed since the previous tag, uploads a `VERSION` artifact
+2. **deploy-frontend** *(if `frontend/` changed)* — syncs assets to S3 with immutable cache headers, syncs `index.html` with `must-revalidate`, invalidates CloudFront
+3. **deploy-lambda** *(if `lambda/` changed)* — builds TypeScript, prunes devDependencies, zips `dist/` + `node_modules/` + `VERSION`, uploads to Lambda, waits for propagation, publishes an immutable version snapshot, updates the `live` alias, runs a smoke test through CloudFront
+
+A separate `auto-tag` workflow creates the corresponding `vX.Y.Z` git tag once the VERSION change lands on `main`.
 
 Each Lambda version is immutable. Rollback is a single AWS CLI call:
 
