@@ -1,0 +1,29 @@
+name: auto-tag
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create tag from VERSION
+        run: |
+          VERSION="v$(cat VERSION)"
+          if git ls-remote --tags origin "$VERSION" | grep -q "$VERSION"; then
+            echo "Tag $VERSION already exists — skipping."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$VERSION"
+            git push origin "$VERSION"
+            echo "Tagged $VERSION"
+          fi

@@ -1,0 +1,34 @@
+name: terraform-docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Render terraform docs
+        uses: terraform-docs/gh-actions@v1
+        with:
+          working-dir: >-
+            terraform,
+            terraform/modules/ivs,
+            terraform/modules/s3,
+            terraform/modules/lambda,
+            terraform/modules/cloudfront,
+            terraform/modules/dns,
+            terraform/modules/monitoring
+          output-file: README.md
+          output-method: inject
+          git-push: true
+          git-commit-message: "docs: regenerate terraform-docs [skip ci]"
