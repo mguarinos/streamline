@@ -146,10 +146,10 @@ Key outputs:
 
 | Output | Used for |
 |---|---|
-| `ingest_endpoint` | OBS/Larix Server field |
 | `cloudfront_url` | Share with viewers |
-| `s3_bucket_name` | GitHub variable |
-| `retrieve_stream_key_command` | Get the stream key from Secrets Manager |
+| `cloudfront_distribution_id` | GitHub Actions variable |
+| `lambda_function_name` | GitHub Actions variable |
+| `s3_bucket_name` | GitHub Actions variable |
 
 ### 6. Add GitHub secrets and variables
 
@@ -166,9 +166,9 @@ In your repository → **Settings → Secrets and variables → Actions**:
 | Variable | Value |
 |---|---|
 | `AWS_REGION` | e.g. `eu-west-1` |
-| `S3_BUCKET_NAME` | From `terraform output -raw s3_bucket_name` |
-| `CLOUDFRONT_DISTRIBUTION_ID` | `terraform state show module.cloudfront.aws_cloudfront_distribution.this \| grep '^id'` |
-| `LAMBDA_FUNCTION_NAME` | `streamline-{environment}` — matches the value you set in `terraform.tfvars` (e.g. `streamline-prod`) |
+| `S3_BUCKET_NAME` | `terraform output -raw s3_bucket_name` |
+| `CLOUDFRONT_DISTRIBUTION_ID` | `terraform output -raw cloudfront_distribution_id` |
+| `LAMBDA_FUNCTION_NAME` | `terraform output -raw lambda_function_name` |
 
 ### 7. Trigger the first deploy
 
@@ -186,8 +186,8 @@ In OBS → **Settings → Stream → Custom**:
 
 | Field | Value |
 |---|---|
-| Server | Paste `ingest_endpoint` from Terraform output |
-| Stream Key | Run the `retrieve_stream_key_command` output |
+| Server | Open **AWS Secrets Manager** → secret `streamline/{environment}/stream-key` → `url` field |
+| Stream Key | Same secret → `key` field |
 
 ---
 

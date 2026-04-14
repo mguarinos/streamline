@@ -1,7 +1,9 @@
 {
   "name": "streamline-lambda",
   "version": "0.1.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "dev": "ts-node src/local.ts",
