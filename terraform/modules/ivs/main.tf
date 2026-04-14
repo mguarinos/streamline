@@ -4,10 +4,6 @@ resource "aws_ivs_channel" "this" {
   latency_mode = "LOW"
   authorized   = false
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   # DVR — no recording_configuration_arn is needed.
   #
   # AWS IVS STANDARD channels maintain a rolling 4-hour DVR window in IVS's
@@ -29,15 +25,12 @@ data "aws_ivs_stream_key" "this" {
 resource "aws_secretsmanager_secret" "stream_key" {
   name = "streamline/${var.environment}/stream-key"
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_secretsmanager_secret_version" "stream_key" {
   secret_id = aws_secretsmanager_secret.stream_key.id
   secret_string = jsonencode({
-    url = aws_ivs_channel.this.ingest_endpoint
+    url = "rtmps://${aws_ivs_channel.this.ingest_endpoint}:443/app/"
     key = data.aws_ivs_stream_key.this.value
   })
 }
