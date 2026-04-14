@@ -8,11 +8,6 @@ output "ingest_endpoint" {
   value       = aws_ivs_channel.this.ingest_endpoint
 }
 
-output "channel_arn" {
-  description = "IVS channel ARN"
-  value       = aws_ivs_channel.this.arn
-}
-
 output "stream_key_arn" {
   description = "Secrets Manager secret ARN storing the IVS stream key"
   value       = aws_secretsmanager_secret.stream_key.arn
