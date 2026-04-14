@@ -2,8 +2,9 @@ name: Deploy
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+    branches: [main]
+    paths:
+      - VERSION
   workflow_dispatch:
     inputs:
       deploy_frontend:
@@ -45,7 +46,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             SEMVER="manual-$(git rev-parse --short=7 HEAD)"
           else
-            SEMVER=${GITHUB_REF_NAME#v}
+            SEMVER=$(cat VERSION)
           fi
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
           echo "semver=$SEMVER" >> $GITHUB_OUTPUT
@@ -59,18 +60,16 @@ jobs:
             echo "frontend=${{ inputs.deploy_frontend }}" >> $GITHUB_OUTPUT
             echo "lambda=${{ inputs.deploy_lambda }}" >> $GITHUB_OUTPUT
           else
-            # Find the previous semver tag. If none exists (first release),
-            # fall back to the initial commit so everything is treated as changed.
-            PREV_TAG=$(git tag --sort=-version:refname \
-              | grep -v "^${GITHUB_REF_NAME}$" \
-              | head -1)
+            # Find the most recent semver tag as the diff base. If none exists
+            # (first release), fall back to the initial commit.
+            PREV_TAG=$(git tag --sort=-version:refname | head -1)
 
             if [ -z "$PREV_TAG" ]; then
               BASE=$(git rev-list --max-parents=0 HEAD)
               echo "No previous tag found — comparing against initial commit ($BASE)"
             else
               BASE="$PREV_TAG"
-              echo "Comparing $BASE → $GITHUB_REF_NAME"
+              echo "Comparing $BASE → $(cat VERSION)"
             fi
 
             CHANGED=$(git diff --name-only "$BASE"..HEAD)
